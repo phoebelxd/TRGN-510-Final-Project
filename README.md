@@ -1,7 +1,7 @@
 # TRGN-510-Final-Project
 
 ## Description  
-This repository is for my final project in TRGN 510. The purpose of this project is to compare the gene expression quantification with regard to Acute Lymphoblastic Leukemia using diverging barcharts. Different subgroups and/or phases can be selected with UI elements.   
+This repository is for my final project in TRGN 510. The purpose of this project is to compare the gene expression quantification with regard to Acute Lymphoblastic Leukemia using heat map. Different subgroups and/or phases can be selected with UI elements.   
 
 ## Datasets
 The data is from [GDC Data Portal of NIH](https://portal.gdc.cancer.gov) including clinical data and gene expression quantification: 
