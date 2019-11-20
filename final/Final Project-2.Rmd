@@ -1,0 +1,78 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Load data into R
+```{R}
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("F2")
+temp = list.files(pattern="*.txt")
+F2<-lapply(temp, read.csv, sep="\t", header = FALSE)
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("F3")
+temp = list.files(pattern="*.txt")
+F3<-lapply(temp, read.csv, sep="\t", header = FALSE)
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("M2")
+temp = list.files(pattern="*.txt")
+M2<-lapply(temp, read.csv, sep="\t", header = FALSE)
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("M3")
+temp = list.files(pattern="*.txt")
+M3<-lapply(temp, read.csv, sep="\t", header = FALSE)
+```
+## Combine all data together 
+```{R}
+ALL<-c(F2,F3,M2,M3)
+```
+## Function1 = obtain the mean value of a data set
+```{R}
+aggregate <- function(listname) {
+  res <- rowMeans(sapply(listname,function(x){
+    return(x[,2])
+  }))
+  return(res)
+}
+```
+
+## Function2 = transformations from the raw-scale
+```{R}
+lcpm <- function(listname) {
+  res <- cpm(listname, log=TRUE)
+  return(res)
+}
+```
+## Generate data frame
+```{R}
+library(edgeR)
+res<- data.frame(all=lcpm(aggregate(ALL)), m2=lcpm(aggregate(M2)), m3=lcpm(aggregate(M3)), f2=lcpm(aggregate(F2)), f3=lcpm(aggregate(F3)), name=ALL[[1]][,1])
+```
+## Removing genes that are lowly expressed
+```{R}
+keep.exprs <- filterByExpr(aggregate(ALL))
+res <- res[keep.exprs,]
+```
+## Graphical representation
+```{R}
+res2<-head(res[order(res$all, decreasing= T),], n = 20)
+rownames(res2)<-res2[,6]
+res2$m2<-(res2$m2-res2$all)/res2$all*100
+res2$m3<-(res2$m3-res2$all)/res2$all*100
+res2$f2<-(res2$f2-res2$all)/res2$all*100
+res2$f3<-(res2$f3-res2$all)/res2$all*100
+res2$all<-(res2$all-res2$all)/res2$all*100
+res2<-subset(res2, select=-c(name))
+heatmap(data.matrix(res2))
+```
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
