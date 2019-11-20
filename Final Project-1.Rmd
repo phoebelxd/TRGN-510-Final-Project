@@ -3,7 +3,7 @@ title: "TRGN 510 Final project-1"
 output: html_notebook
 ---
 # Data Organization
-
+```{R}
 setwd("~/TRGN-510-Final-Project")
 setwd("final")
 setwd("F2")
@@ -24,9 +24,10 @@ setwd("final")
 setwd("M3")
 temp = list.files(pattern="*.txt")
 M3<-lapply(temp, read.csv, sep="\t", header = FALSE)
+```
+## Combine all data together 
+```{R}
 ALL<-c(F2,F3,M2,M3)
-
-# Data Exploring by diverging barcharts for a better understanding
 
 aggregate <- function(listname) {
   res <- rowMeans(sapply(listname,function(x){
@@ -44,7 +45,9 @@ res$type<-ifelse(res$dev < 0, "below", "above")
 
 library(ggplot2)
 theme_set(theme_bw())  
-
+```
+# Data Exploring by diverging barcharts for a better understanding
+```{R}
 ggplot(res[1:20,], aes(x=name, y=dev, label=dev)) + 
   geom_bar(stat='identity', aes(fill=type), width=.5)  +
   scale_fill_manual(name="Deviation", 
@@ -53,5 +56,4 @@ ggplot(res[1:20,], aes(x=name, y=dev, label=dev)) +
   labs(subtitle="something", 
        title= "something") + 
   coord_flip()
-
-
+```
