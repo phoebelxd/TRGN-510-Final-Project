@@ -1,0 +1,146 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+# Data analysis
+## Load data into R
+```{r}
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("F2")
+temp = list.files(pattern="*.txt")
+F2<-lapply(temp, read.csv, sep="\t", header = FALSE)
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("F3")
+temp = list.files(pattern="*.txt")
+F3<-lapply(temp, read.csv, sep="\t", header = FALSE)
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("M2")
+temp = list.files(pattern="*.txt")
+M2<-lapply(temp, read.csv, sep="\t", header = FALSE)
+setwd("~/TRGN-510-Final-Project")
+setwd("final")
+setwd("M3")
+temp = list.files(pattern="*.txt")
+M3<-lapply(temp, read.csv, sep="\t", header = FALSE)
+```
+## Combine all data together 
+```{R}
+ALL<-c(F2,F3,M2,M3)
+```
+## Function1 = obtain the mean value of a data set
+```{r}
+aggregate <- function(listname) {
+  res <- rowMeans(sapply(listname,function(x){
+    return(x[,2])
+  }))
+  return(res)
+}
+```
+## Function2 = transformations from the raw-scale
+```{r}
+lcpm <- function(listname) {
+  res <- cpm(listname, log=TRUE)
+  return(res)
+}
+```
+## Generate data frame
+```{r}
+library(edgeR)
+res<- data.frame(all=lcpm(aggregate(ALL)), m2=lcpm(aggregate(M2)), m3=lcpm(aggregate(M3)), f2=lcpm(aggregate(F2)), f3=lcpm(aggregate(F3)), name=ALL[[1]][,1])
+```
+## Removing genes that are lowly expressed
+```{r}
+keep.exprs <- filterByExpr(aggregate(ALL))
+res <- res[keep.exprs,]
+```
+## Graphical representation
+```{r}
+res2<-head(res[order(res$all, decreasing= T),], n = 20)
+rownames(res2)<-res2[,6]
+res2$m2<-(res2$m2-res2$all)/res2$all*100
+res2$m3<-(res2$m3-res2$all)/res2$all*100
+res2$f2<-(res2$f2-res2$all)/res2$all*100
+res2$f3<-(res2$f3-res2$all)/res2$all*100
+res2$all<-(res2$all-res2$all)/res2$all*100
+res2<-subset(res2, select=-c(name))
+heatmap(data.matrix(res2))
+```
+# Interactive correlation heatmap in shiny 
+## Shiny UI design
+```{r}
+library(shiny)
+library(dplyr)
+library(logging)
+options(stringsAsFactors = FALSE)
+basicConfig(0)
+ui <- fluidPage(
+    titlePanel("The Gene Expression Quantification of Acute Lymphoblastic Leukemia" ),
+      sidebarLayout(
+        sidebarPanel(
+          selectInput("dataset1", "Choose a gender and phase:",
+                  choices = c("Female phase2", "Female phase3", "Male phase2", "Male phase3", "All"),
+                  multiple = TRUE,
+                  selected = c("Female phase2", "Female phase3", "Male phase2", "Male phase3", "All")),
+          
+           
+           helpText("Note: while the data view will show only top 20 highest gene expression.",
+               " The color of 'all' represents the zero difference with the mean value of all the cases ",
+               "The deep color represents high gene expression.")
+           
+      
+
+    ),
+       # Main panel for displaying outputs ----
+     mainPanel (
+      # Output: 
+      h4("Comparison Heatmap"),
+     
+        plotOutput("heatmap")
+  
+    )
+  )
+)
+``` 
+## Shiny server
+```{r}
+
+server <- function(input, output) { 
+ observe({
+    logdebug(data.frame(col = input$dataset1))
+  })
+  firstcolumn <- reactive({
+    case_when(input$dataset1 == "Female phase2" ~ "f2",
+              input$dataset1 == "Female phase3" ~ "f3",
+              input$dataset1 == "Male phase2" ~ "m2",
+              input$dataset1 == "Male phase3" ~ "m3",
+              TRUE~"all")  
+  })
+  
+
+  observe({
+    logdebug(firstcolumn())
+  })
+
+   output$heatmap <- renderPlot({
+     data<- res2[, names(res2) %in% firstcolumn()]
+     heatmap(data.matrix(data), height= "800", width= "100%")})
+  
+  }  
+
+shinyApp(ui, server)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
