@@ -37,6 +37,10 @@ Adjust raw data some more.
 Debug and optimize code.
 Deploy application on the cloud.
 
+#### Milestone 4 (12/4/19)
+Modified the code and formate for shiny.app (from .Rmd to .R )
+Publish the Shiny app.
+
 ## User Interface 
-User interface will roughly look like this [demo](https://shiny.rstudio.com/gallery/telephones-by-region.html).
+User interface is look like this [Gene expression of Acute Lymphoblastic Leukemia](https://phoebeisshiny.shinyapps.io/TRGN510Final/).
 The select list input controls will be on the left side, so the users can pick patients of different sexes and phases. The heat map will be on the right side.
